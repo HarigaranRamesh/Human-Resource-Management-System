@@ -1,4 +1,22 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+// Provide standard in-memory localStorage for Node testing environment
+const storageMock = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: (key: string) => (key in store ? store[key] : null),
+    setItem: (key: string, value: string) => { store[key] = String(value); },
+    removeItem: (key: string) => { delete store[key]; },
+    clear: () => { store = {}; },
+  };
+})();
+
+Object.defineProperty(globalThis, 'localStorage', {
+  value: storageMock,
+  writable: true,
+  configurable: true,
+});
+
 import {
   decodeToken,
   saveToken,
