@@ -100,12 +100,19 @@ jobs:
           cache-dependency-path: './HRMS-Backend/package-lock.json'
 
       - name: Install Backend Dependencies
-        run: npm ci
+        env:
+          ONNXRUNTIME_NODE_INSTALL_CUDA: skip
+        run: npm ci --onnxruntime-node-install-cuda=skip
 
       - name: Check JavaScript Syntax Across Backend Files
         run: |
           find src -name "*.js" -exec node -c {} +
           echo "✅ All backend JavaScript files passed syntax verification."
+
+      - name: Install PostgreSQL Client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client
 
       - name: Verify PostgreSQL Schema Migration
         env:
