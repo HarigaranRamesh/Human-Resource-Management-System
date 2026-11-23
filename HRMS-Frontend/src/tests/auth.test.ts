@@ -93,8 +93,8 @@ describe('Frontend Authentication Utilities', () => {
   it('ROUTE_MAP should define valid routes for core HRMS modules', () => {
     expect(ROUTE_MAP['Dashboard']).toBe('/');
     expect(ROUTE_MAP['Welcome']).toBe('/home/welcome');
-    expect(ROUTE_MAP['Access Control']).toBe('/home/access');
-    expect(ROUTE_MAP['User Management']).toBe('/home/view-user');
-    expect(ROUTE_MAP['Payroll & Payslip']).toBe('/home/payroll');
+    expect(ROUTE_MAP['My Profile']).toBe('/home/profile');
+    expect(ROUTE_MAP['View Users']).toBe('/home/viewuser');
+    expect(ROUTE_MAP['Salary Structure']).toBe('/home/salary');
   });
 });
