@@ -1,0 +1,23 @@
+{
+  "name": "niralix-hrms",
+  "version": "2.0.0",
+  "description": "NIRALIX Enterprise Human Resource Management System",
+  "private": true,
+  "scripts": {
+    "test": "bash scripts/run-all-tests.sh",
+    "test:backend": "cd HRMS-Backend && npm test",
+    "test:frontend": "cd HRMS-Frontend && npm test",
+    "prepare": "git config core.hooksPath .githooks"
+  },
+  "keywords": [
+    "hrms",
+    "enterprise",
+    "payroll",
+    "attendance",
+    "react",
+    "nodejs",
+    "postgresql"
+  ],
+  "author": "Harigaran R <harigaran925@gmail.com>",
+  "license": "UNLICENSED"
+}

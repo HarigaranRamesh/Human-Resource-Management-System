@@ -53,6 +53,9 @@ jobs:
       - name: Run Fast Lint Verification
         run: npx oxlint || npm run lint || echo "Lint verified"
 
+      - name: Run Frontend Unit & Integration Tests
+        run: npm test
+
       - name: Run TypeScript & Vite Production Build
         run: npm run build
 
@@ -108,6 +111,9 @@ jobs:
         run: |
           find src -name "*.js" -exec node -c {} +
           echo "✅ All backend JavaScript files passed syntax verification."
+
+      - name: Run Backend Unit & Integration Tests
+        run: npm test
 
       - name: Install PostgreSQL Client
         run: |
