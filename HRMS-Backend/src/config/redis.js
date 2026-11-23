@@ -6,6 +6,9 @@ let isRedisConnected = false;
 const memoryStore = new Map();
 
 async function initRedis() {
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
   const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
   try {
     const { createClient } = require('redis');

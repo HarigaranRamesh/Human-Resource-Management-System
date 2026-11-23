@@ -11,6 +11,9 @@ let isRabbitConnected = false;
 const NOTIFICATIONS_QUEUE = 'hrms_notifications_queue';
 
 async function initRabbitMQ() {
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
   const amqpUrl = process.env.RABBITMQ_URL || 'amqp://localhost:5672';
   try {
     const amqp = require('amqplib');
