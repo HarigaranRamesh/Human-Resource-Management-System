@@ -93,7 +93,7 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <Navigate to="/dashboard" replace /> },
+      { index: true, element: <Navigate to="/home/welcome" replace /> },
       {
         path: 'dashboard',
         element: <Suspense fallback={<PageLoader />}><DashboardPage /></Suspense>,

@@ -57,6 +57,7 @@ export function isStaffOrAdmin(): boolean {
 
 export const ROUTE_MAP: Record<string, string> = {
   'Dashboard': '/',
+  'Home': '/home/welcome',
   'Welcome': '/home/welcome',
   'Employee Welcome': '/home/welcome',
   'My Profile': '/home/profile',
@@ -144,14 +145,14 @@ export function buildMenuFromToken(): { label: string; icon: string; items: { la
     const roleName = (decoded?.roleName || '').toLowerCase();
     const isAdmin = isSysAdmin || roleName.includes('admin') || roleName.includes('hr');
 
-    // Top Category 1: Always Home with Dashboard & Welcome
+    // Top Category 1: Always Home with Welcome as the first page
     const homeCategory = {
       label: 'Home',
       icon: 'home',
       items: [
+        { label: 'Welcome', icon: 'sparkles', path: '/home/welcome' },
         { label: 'Dashboard', icon: 'layout', path: '/dashboard' },
         { label: 'My Profile', icon: 'user', path: '/home/profile' },
-        { label: 'Welcome', icon: 'sparkles', path: '/home/welcome' },
       ],
     };
 

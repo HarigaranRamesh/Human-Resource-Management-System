@@ -97,36 +97,35 @@ export default function EmployeeWelcomePage() {
           ══════════════════════════════════════════════════════ */}
       <div
         style={{
-          background: 'linear-gradient(135deg, rgba(47, 65, 86, 0.95), rgba(86, 124, 141, 0.9))',
-          borderRadius: '24px',
-          padding: '2rem 2.5rem',
+          background: '#2F4156',
+          borderRadius: '10px',
+          padding: '1.75rem 2rem',
           color: '#FFFFFF',
-          boxShadow: '0 12px 32px -4px rgba(47, 65, 86, 0.25)',
+          border: '1px solid #1e2b3a',
+          boxShadow: '0 2px 8px rgba(47, 65, 86, 0.1)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           flexWrap: 'wrap',
           gap: '1.5rem',
           position: 'relative',
-          overflow: 'hidden',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', zIndex: 2 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
           {/* Large round avatar */}
           <div
             style={{
-              width: '74px',
-              height: '74px',
+              width: '68px',
+              height: '68px',
               borderRadius: '50%',
               background: '#FFFFFF',
               color: '#2F4156',
-              fontSize: '1.6rem',
+              fontSize: '1.5rem',
               fontWeight: 800,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
-              border: '3px solid rgba(200, 217, 230, 0.8)',
+              border: '2px solid rgba(255, 255, 255, 0.4)',
               overflow: 'hidden',
             }}
           >
@@ -139,15 +138,15 @@ export default function EmployeeWelcomePage() {
 
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <span style={{ fontSize: '0.8rem', background: 'rgba(200, 217, 230, 0.25)', padding: '2px 10px', borderRadius: '20px', fontWeight: 700, letterSpacing: '0.04em' }}>
+              <span style={{ fontSize: '0.75rem', background: 'rgba(255, 255, 255, 0.15)', padding: '2px 8px', borderRadius: '4px', fontWeight: 700, letterSpacing: '0.04em' }}>
                 EMPLOYEE PORTAL
               </span>
-              <span style={{ fontSize: '0.8rem', color: '#C8D9E6' }}>• KIC Bengaluru</span>
+              <span style={{ fontSize: '0.78rem', color: '#cbd5e1' }}>• KIC Bengaluru</span>
             </div>
-            <h1 style={{ fontSize: '1.8rem', fontWeight: 900, margin: 0, letterSpacing: '-0.02em' }}>
+            <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: 0, letterSpacing: '-0.02em', color: '#FFFFFF' }}>
               Welcome back, {userName}! 👋
             </h1>
-            <p style={{ margin: '4px 0 0', color: 'rgba(200, 217, 230, 0.85)', fontSize: '0.92rem', fontWeight: 500 }}>
+            <p style={{ margin: '4px 0 0', color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.9rem', fontWeight: 500 }}>
               {userRole} • {userDept} Department
             </p>
           </div>
@@ -156,25 +155,23 @@ export default function EmployeeWelcomePage() {
         {/* Live Web Clock-in Action Card */}
         <div
           style={{
-            background: 'rgba(255, 255, 255, 0.12)',
-            backdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255, 255, 255, 0.25)',
-            borderRadius: '18px',
-            padding: '1.25rem 1.75rem',
+            background: 'rgba(255, 255, 255, 0.08)',
+            border: '1px solid rgba(255, 255, 255, 0.18)',
+            borderRadius: '8px',
+            padding: '1rem 1.5rem',
             display: 'flex',
             alignItems: 'center',
-            gap: '1.5rem',
-            zIndex: 2,
+            gap: '1.25rem',
           }}
         >
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#C8D9E6', fontSize: '0.75rem', fontWeight: 700 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#cbd5e1', fontSize: '0.72rem', fontWeight: 700 }}>
               <Clock size={14} /> LIVE SHIFT TIME
             </div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#FFFFFF', marginTop: '2px' }}>
+            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#FFFFFF', marginTop: '2px' }}>
               {currentTime}
             </div>
-            <span style={{ fontSize: '0.72rem', color: 'rgba(200, 217, 230, 0.8)' }}>
+            <span style={{ fontSize: '0.72rem', color: 'rgba(255, 255, 255, 0.7)' }}>
               General Shift • 09:30 AM – 06:30 PM
             </span>
           </div>
@@ -182,21 +179,16 @@ export default function EmployeeWelcomePage() {
           <button
             onClick={handlePunch}
             style={{
-              padding: '12px 24px',
-              borderRadius: '12px',
+              padding: '10px 20px',
+              borderRadius: '6px',
               border: 'none',
-              background: clockedIn
-                ? 'linear-gradient(135deg, #ef4444, #dc2626)'
-                : 'linear-gradient(135deg, #22c55e, #16a34a)',
+              background: clockedIn ? '#ef4444' : '#22c55e',
               color: '#FFFFFF',
-              fontWeight: 800,
-              fontSize: '0.9rem',
+              fontWeight: 700,
+              fontSize: '0.875rem',
               cursor: 'pointer',
-              boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
-              transition: 'transform 0.18s ease',
+              transition: 'opacity 0.2s ease',
             }}
-            onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.04)')}
-            onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
           >
             {clockedIn ? 'Clock Out' : 'Web Clock-in'}
           </button>
@@ -206,45 +198,46 @@ export default function EmployeeWelcomePage() {
       {/* ══════════════════════════════════════════════════════
           QUICK SELF-SERVICE SHORTCUTS ROW
           ══════════════════════════════════════════════════════ */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
         {[
-          { icon: <Calendar size={22} color="#567C8D" />, label: 'Apply Leave', path: '/home/leaverequest', badge: '12 Days Left' },
-          { icon: <CreditCard size={22} color="#22c55e" />, label: 'View Payslips', path: '/home/payslip', badge: 'Feb Ready' },
-          { icon: <FolderLock size={22} color="#f59e0b" />, label: 'Document Vault', path: '/home/documents', badge: 'Encrypted' },
-          { icon: <Network size={22} color="#567C8D" />, label: 'Org Hierarchy', path: '/home/org-chart', badge: 'Interactive' },
+          { icon: <Calendar size={20} color="#567C8D" />, label: 'Apply Leave', path: '/home/leaverequest', badge: 'Time-Off' },
+          { icon: <Clock size={20} color="#567C8D" />, label: 'Regularization', path: '/home/attendance-regularization', badge: 'Punches' },
+          { icon: <Award size={20} color="#567C8D" />, label: 'Performance', path: '/home/performance', badge: 'OKRs & Goals' },
+          { icon: <CreditCard size={20} color="#22c55e" />, label: 'View Payslips', path: '/home/payslip', badge: 'Finance' },
+          { icon: <FolderLock size={20} color="#f59e0b" />, label: 'Document Vault', path: '/home/documents', badge: 'Vault' },
+          { icon: <Network size={20} color="#567C8D" />, label: 'Org Hierarchy', path: '/home/org-chart', badge: 'Directory' },
         ].map((item, i) => (
           <div
             key={i}
             onClick={() => navigate(item.path)}
             style={{
               background: 'var(--surface-0)',
-              borderRadius: '16px',
-              padding: '1.25rem',
-              border: '1px solid rgba(86, 124, 141, 0.2)',
-              boxShadow: '0 2px 8px rgba(47, 65, 86, 0.05)',
+              borderRadius: '8px',
+              padding: '1rem',
+              border: '1px solid var(--border)',
               display: 'flex',
               alignItems: 'center',
-              gap: '1rem',
+              gap: '0.85rem',
               cursor: 'pointer',
-              transition: 'all 0.2s ease',
+              transition: 'all 0.15s ease',
             }}
             onMouseOver={e => {
-              e.currentTarget.style.transform = 'translateY(-3px)';
               e.currentTarget.style.borderColor = '#567C8D';
+              e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.06)';
             }}
             onMouseOut={e => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.borderColor = 'rgba(86, 124, 141, 0.2)';
+              e.currentTarget.style.borderColor = 'var(--border)';
+              e.currentTarget.style.boxShadow = 'none';
             }}
           >
-            <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(86, 124, 141, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '38px', height: '38px', borderRadius: '6px', background: 'rgba(86, 124, 141, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {item.icon}
             </div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-primary)' }}>{item.label}</div>
+              <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text-primary)' }}>{item.label}</div>
               <span style={{ fontSize: '0.72rem', color: '#567C8D', fontWeight: 600 }}>{item.badge}</span>
             </div>
-            <ArrowRight size={16} style={{ marginLeft: 'auto', color: 'var(--text-muted)' }} />
+            <ArrowRight size={14} style={{ marginLeft: 'auto', color: 'var(--text-secondary)' }} />
           </div>
         ))}
       </div>
