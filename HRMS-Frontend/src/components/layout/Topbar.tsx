@@ -6,7 +6,7 @@ import {
   Network, CreditCard, FolderLock, FileText, Shield
 } from 'lucide-react';
 import { useLayout } from '../../context/LayoutContext';
-import { logout } from '../../lib/auth';
+import { logout, buildMenuFromToken } from '../../lib/auth';
 import { HariHrmsLogo } from '../common/HariHrmsLogo';
 import { userApi } from '../../services/api.service';
 import { resolveAssetUrl } from '../../lib/api';
@@ -135,6 +135,23 @@ function Topbar() {
     }
   };
 
+  // Keka-Style: Subcategories for the current active section
+  const menu = buildMenuFromToken();
+  const currentPath = location.pathname;
+
+  const activeCategory = menu.find(cat =>
+    cat.items.some(item => {
+      const cleanItemPath = item.path.split('?')[0];
+      const cleanCurrentPath = currentPath.split('?')[0];
+      return (
+        cleanItemPath === cleanCurrentPath ||
+        (cleanItemPath !== '/' && cleanItemPath !== '/dashboard' && cleanCurrentPath.startsWith(cleanItemPath))
+      );
+    })
+  ) || menu[0];
+
+  const subcategories = activeCategory?.items || [];
+
   return (
     <div className="layout-topbar">
       <div className="layout-topbar-logo-container">
@@ -156,6 +173,35 @@ function Topbar() {
           <HariHrmsLogo size={34} showText={true} />
         </Link>
       </div>
+
+      {/* ══════════════════════════════════════════════════════
+          KEKA-STYLE HORIZONTAL SUB-CATEGORIES STRIP (SIDEWAYS)
+          ══════════════════════════════════════════════════════ */}
+      {subcategories.length > 0 && (
+        <nav
+          className="layout-topbar-subcategories"
+          aria-label="Sub-navigation"
+        >
+          {subcategories.map((sub, idx) => {
+            const cleanSubPath = sub.path.split('?')[0];
+            const cleanCurPath = currentPath.split('?')[0];
+            const isActive =
+              cleanSubPath === cleanCurPath ||
+              (cleanSubPath !== '/' && cleanSubPath !== '/dashboard' && cleanCurPath.startsWith(cleanSubPath));
+
+            return (
+              <Link
+                key={sub.path || idx}
+                to={sub.path}
+                className={`topbar-subnav-link ${isActive ? 'active' : ''}`}
+                title={sub.label}
+              >
+                <span>{sub.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+      )}
 
       <div className="layout-topbar-actions">
         {/* User Info & Theme Toggle */}
