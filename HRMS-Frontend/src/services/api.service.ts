@@ -51,6 +51,12 @@ export const attendanceApi = {
   getAttendanceReport: (params?: any) => api.get('/api/attendance/report', { params }),
   getDailyReport: (params?: any) => api.get('/api/attendance/daily-report', { params }),
   getMonthlyReport: (params?: any) => api.get('/api/attendance/monthly-report', { params }),
+  // Keka-Grade Attendance Regularization
+  applyRegularization: (data: { date: string; checkInTime?: string; checkOutTime?: string; reason: string }) =>
+    api.post('/api/attendance/regularize', data),
+  getRegularizations: (params?: any) => api.get('/api/attendance/regularizations', { params }),
+  reviewRegularization: (id: string, data: { approved: boolean; remarks?: string }) =>
+    api.put(`/api/attendance/regularize/${id}`, data),
 };
 
 // ── Keka-Grade Payroll & Salary Engine API ────────────────
@@ -167,6 +173,33 @@ export const letterApi = {
 export const onboardingApi = {
   getStatus: () => api.get('/api/onboard/status'),
   setup: (data: any) => api.post('/api/onboard/setup', data),
+};
+
+// ── Keka PMS: Performance & OKR Goal Tracking API ──────────
+export const performanceApi = {
+  getReviews: (params?: any) => api.get('/api/performance', { params }),
+  getReviewById: (id: string) => api.get(`/api/performance/${id}`),
+  createReview: (data: any) => api.post('/api/performance', data),
+  updateReview: (id: string, data: any) => api.put(`/api/performance/${id}`, data),
+  deleteReview: (id: string) => api.delete(`/api/performance/${id}`),
+};
+
+// ── Keka Helpdesk: Support & Service Requests API ─────────
+export const helpdeskApi = {
+  getTickets: (params?: any) => api.get('/api/helpdesk', { params }),
+  getTicketById: (id: string) => api.get(`/api/helpdesk/${id}`),
+  createTicket: (data: any) => api.post('/api/helpdesk', data),
+  updateTicket: (id: string, data: any) => api.put(`/api/helpdesk/${id}`, data),
+  getAnalytics: () => api.get('/api/helpdesk/analytics'),
+};
+
+// ── Keka Offboarding: Resignation & Exit Clearance API ─────
+export const resignationApi = {
+  getResignations: (params?: any) => api.get('/api/resignation', { params }),
+  getResignationById: (id: string) => api.get(`/api/resignation/${id}`),
+  apply: (data: { preferredLastWorkingDay: string; reason: string; comments?: string; noticePeriodDays?: number }) =>
+    api.post('/api/resignation', data),
+  updateStatus: (id: string, data: any) => api.put(`/api/resignation/${id}`, data),
 };
 
 export const authApi = {

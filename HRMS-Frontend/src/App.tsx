@@ -30,6 +30,10 @@ const AssetManagementPage = lazy(() => import('./pages/AssetManagementPage'));
 const AccessPage = lazy(() => import('./pages/AccessPage'));
 const LettersPage = lazy(() => import('./pages/LettersPage'));
 const EnterpriseOnboardingPage = lazy(() => import('./pages/EnterpriseOnboardingPage'));
+const AttendanceRegularizationPage = lazy(() => import('./pages/AttendanceRegularizationPage'));
+const PerformancePage = lazy(() => import('./pages/PerformancePage'));
+const HelpdeskPage = lazy(() => import('./pages/HelpdeskPage'));
+const ResignationPage = lazy(() => import('./pages/ResignationPage'));
 
 import { BrandLoader } from './components/common/HariHrmsLogo';
 
@@ -134,6 +138,15 @@ const router = createBrowserRouter([
         path: 'home/attendance',
         element: <Suspense fallback={<PageLoader />}><MonthlyReportPage /></Suspense>,
       },
+      // Keka-Grade Attendance Regularization
+      {
+        path: 'home/attendance-regularization',
+        element: <Suspense fallback={<PageLoader />}><AttendanceRegularizationPage /></Suspense>,
+      },
+      {
+        path: 'home/regularization',
+        element: <Suspense fallback={<PageLoader />}><AttendanceRegularizationPage /></Suspense>,
+      },
       // Leave Management
       {
         path: 'home/leaverequest',
@@ -185,6 +198,33 @@ const router = createBrowserRouter([
       {
         path: 'home/asset-management',
         element: <Suspense fallback={<PageLoader />}><AssetManagementPage /></Suspense>,
+      },
+      // Keka-Grade Performance & OKRs
+      {
+        path: 'home/performance',
+        element: <Suspense fallback={<PageLoader />}><PerformancePage /></Suspense>,
+      },
+      {
+        path: 'home/okr',
+        element: <Suspense fallback={<PageLoader />}><PerformancePage /></Suspense>,
+      },
+      // Keka-Grade HR Helpdesk & Service Tickets
+      {
+        path: 'home/helpdesk',
+        element: <Suspense fallback={<PageLoader />}><HelpdeskPage /></Suspense>,
+      },
+      {
+        path: 'home/tickets',
+        element: <Suspense fallback={<PageLoader />}><HelpdeskPage /></Suspense>,
+      },
+      // Keka-Grade Resignation & Exit Clearance (Offboarding)
+      {
+        path: 'home/resignation',
+        element: <Suspense fallback={<PageLoader />}><ResignationPage /></Suspense>,
+      },
+      {
+        path: 'home/offboarding',
+        element: <Suspense fallback={<PageLoader />}><ResignationPage /></Suspense>,
       },
       // Access Control
       {

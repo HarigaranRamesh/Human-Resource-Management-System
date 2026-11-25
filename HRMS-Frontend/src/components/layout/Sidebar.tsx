@@ -75,6 +75,9 @@ function getCategoryIcon(label: string) {
   if (l.includes('asset') || l.includes('device') || l.includes('item')) {
     return <Layers size={20} />;
   }
+  if (l.includes('perform') || l.includes('okr') || l.includes('goal')) {
+    return <Award size={20} />;
+  }
   if (l.includes('certif') || l.includes('letter') || l.includes('loa')) {
     return <Award size={20} />;
   }
@@ -95,6 +98,8 @@ function getMicroLabel(label: string): string {
   if (l.toLowerCase().includes('salary')) return 'Salary';
   if (l.toLowerCase().includes('document')) return 'Docs';
   if (l.toLowerCase().includes('certif') || l.toLowerCase().includes('letter')) return 'Letters';
+  if (l.toLowerCase().includes('perform') || l.toLowerCase().includes('okr')) return 'Goals';
+  if (l.toLowerCase().includes('helpdesk') || l.toLowerCase().includes('ticket')) return 'Help';
   if (l.toLowerCase().includes('feed')) return 'Feed';
   if (l.toLowerCase().includes('access')) return 'Access';
   if (l.toLowerCase().includes('asset')) return 'Assets';

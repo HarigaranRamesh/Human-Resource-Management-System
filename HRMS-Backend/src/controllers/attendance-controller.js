@@ -102,6 +102,87 @@ AttendanceController.get("/", routes.listForTable)
     }
   })
 
+  // ✅ ATTENDANCE REGULARIZATION (Keka Feature)
+  .post("/regularize", async (req, res) => {
+    try {
+      const decrypted = await requireAuth(req, res);
+      if (!decrypted) return;
+
+      const { date, checkInTime, checkOutTime, reason } = req.body;
+      if (!date || !reason) {
+        return res.status(400).json({ message: "Date and reason are required for regularization." });
+      }
+
+      const record = await attendanceRepo.applyRegularization(decrypted.id, {
+        date,
+        checkInTime,
+        checkOutTime,
+        reason,
+      });
+
+      res.status(201).json({ message: "Attendance regularization submitted successfully", record });
+    } catch (err) {
+      console.error("POST /regularize error:", err);
+      res.status(500).json({ message: err.message || "Failed to submit regularization" });
+    }
+  })
+
+  .get("/regularizations", async (req, res) => {
+    try {
+      const decrypted = await requireAuth(req, res);
+      if (!decrypted) return;
+
+      const role = (decrypted.roleName || "").toLowerCase();
+      const isAdmin = decrypted.isSystemAdmin || role.includes("admin") || role.includes("hr");
+
+      const page = parseInt(req.query.page || "1", 10);
+      const limit = parseInt(req.query.limit || "10", 10);
+      const department = req.query.department;
+      const status = req.query.status;
+      const search = req.query.search;
+      const userId = isAdmin && !req.query.myOnly ? undefined : decrypted.id;
+
+      const result = await attendanceRepo.listRegularizations({
+        page,
+        limit,
+        department,
+        status,
+        search,
+        userId,
+      });
+
+      res.json(result);
+    } catch (err) {
+      console.error("GET /regularizations error:", err);
+      res.status(500).json({ message: "Failed to load regularization requests" });
+    }
+  })
+
+  .put("/regularize/:id", async (req, res) => {
+    try {
+      const decrypted = await requireAuth(req, res);
+      if (!decrypted) return;
+
+      const role = (decrypted.roleName || "").toLowerCase();
+      const isAdmin = decrypted.isSystemAdmin || role.includes("admin") || role.includes("hr");
+      if (!isAdmin) {
+        return res.status(403).json({ message: "Only HR or Managers can approve regularization requests" });
+      }
+
+      const { approved, remarks } = req.body;
+      const result = await attendanceRepo.reviewRegularization(req.params.id, {
+        approved: !!approved,
+        remarks: remarks || "",
+        reviewerName: decrypted.user_name || "Manager",
+      });
+
+      res.json({ message: `Regularization request ${approved ? "approved" : "rejected"}`, result });
+    } catch (err) {
+      console.error("PUT /regularize/:id error:", err);
+      res.status(500).json({ message: "Failed to update regularization" });
+    }
+  })
+
   .get("/present/check", async (req, res) => {
     try {
       const decrypted = await requireAuth(req, res);

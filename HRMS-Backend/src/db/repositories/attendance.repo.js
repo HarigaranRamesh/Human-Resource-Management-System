@@ -117,9 +117,100 @@ async function bulkMarkAbsent(date, excludeUserIds = []) {
   return rowCount;
 }
 
+async function applyRegularization(userId, { date, checkInTime, checkOutTime, reason }) {
+  let loginTime = null;
+  let logoutTime = null;
+  if (checkInTime) {
+    loginTime = `${date}T${checkInTime}:00`;
+  }
+  if (checkOutTime) {
+    logoutTime = `${date}T${checkOutTime}:00`;
+  }
+
+  const { rows } = await query(`
+    INSERT INTO attendance (user_id, date, attendance_type, approved, reason_for_applying,
+      geo_login_time, geo_logout_time, remarks)
+    VALUES ($1, $2, 'Present', NULL, $3, $4, $5, 'Regularization Request Submitted')
+    ON CONFLICT (user_id, date)
+    DO UPDATE SET
+      approved = NULL,
+      reason_for_applying = EXCLUDED.reason_for_applying,
+      geo_login_time = COALESCE(EXCLUDED.geo_login_time, attendance.geo_login_time),
+      geo_logout_time = COALESCE(EXCLUDED.geo_logout_time, attendance.geo_logout_time),
+      remarks = 'Regularization Request Submitted'
+    RETURNING *
+  `, [userId, date, reason, loginTime, logoutTime]);
+  return rows[0];
+}
+
+async function listRegularizations({ page = 1, limit = 10, department, status, search, userId } = {}) {
+  const params = [];
+  let where = "WHERE a.reason_for_applying IS NOT NULL AND a.reason_for_applying != ''";
+
+  if (userId) {
+    params.push(userId);
+    where += ` AND a.user_id = $${params.length}`;
+  }
+
+  if (department && department !== 'All') {
+    params.push(department);
+    where += ` AND u.department = $${params.length}`;
+  }
+
+  if (status === 'Pending') {
+    where += " AND a.approved IS NULL";
+  } else if (status === 'Approved') {
+    where += " AND a.approved = TRUE";
+  } else if (status === 'Rejected') {
+    where += " AND a.approved = FALSE";
+  }
+
+  if (search) {
+    params.push(`%${search}%`);
+    where += ` AND (u.user_name ILIKE $${params.length} OR u.emp_id ILIKE $${params.length} OR a.reason_for_applying ILIKE $${params.length})`;
+  }
+
+  const countRes = await query(`
+    SELECT COUNT(*) AS total
+    FROM attendance a
+    JOIN users u ON u.id = a.user_id
+    ${where}
+  `, params);
+
+  const total = parseInt(countRes.rows[0]?.total || '0', 10);
+  const totalPages = Math.ceil(total / limit) || 1;
+
+  params.push(limit, (page - 1) * limit);
+  const { rows } = await query(`
+    SELECT a.*, u.user_name, u.emp_id, u.department, u.email
+    FROM attendance a
+    JOIN users u ON u.id = a.user_id
+    ${where}
+    ORDER BY a.date DESC
+    LIMIT $${params.length - 1} OFFSET $${params.length}
+  `, params);
+
+  return { regularizations: rows, total, page, limit, totalPages };
+}
+
+async function reviewRegularization(id, { approved, remarks, reviewerName }) {
+  const remarkText = remarks ? `${remarks} (Reviewed by ${reviewerName || 'Manager'})` : `Reviewed by ${reviewerName || 'Manager'}`;
+  const { rows } = await query(`
+    UPDATE attendance
+    SET approved = $1,
+        attendance_type = CASE WHEN $1 THEN 'Present'::attendance_type ELSE 'Absent'::attendance_type END,
+        remarks = $2,
+        updated_at = NOW()
+    WHERE id = $3
+    RETURNING *
+  `, [approved, remarkText, id]);
+  return rows[0];
+}
+
 module.exports = {
   findByUserAndDate, getTodayRecord,
   clockIn, clockOut,
   listByUser, listPendingLeaves, approveLeave,
   getDailyReport, getMonthlyReport, bulkMarkAbsent,
+  applyRegularization, listRegularizations, reviewRegularization,
 };

@@ -18,6 +18,9 @@ const DocumentController = require('../controllers/document-controller');
 const AnnouncementsController = require('../controllers/announcements-controller');
 const LetterController = require('../controllers/letter-controller');
 const OnboardingController = require('../controllers/onboarding-controller');
+const PerformanceController = require('../controllers/performance-controller');
+const TaskController = require('../controllers/task-controller');
+const ResignationController = require('../controllers/resignation-controller');
 
 const masterRouter = express.Router();
 
@@ -33,6 +36,14 @@ masterRouter
   .use('/letters', LetterController)
   .use('/certificates', LetterController)
   .use('/certificate', LetterController)
+  // Keka-Grade Performance & OKRs
+  .use('/performance', PerformanceController)
+  // Keka-Grade Helpdesk & Tasks
+  .use('/tasks', TaskController)
+  .use('/helpdesk', TaskController)
+  // Keka-Grade Resignation & Offboarding
+  .use('/resignation', ResignationController)
+  .use('/offboarding', ResignationController)
   // Leave management
   .use('/leaves', LeaveAppController)
   .use('/leave', LeaveAppController)

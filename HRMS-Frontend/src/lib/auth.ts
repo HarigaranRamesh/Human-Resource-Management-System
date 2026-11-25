@@ -97,6 +97,18 @@ export const ROUTE_MAP: Record<string, string> = {
   'Experience Letter': '/home/letters?type=experience',
   'Certificate': '/home/letters',
   'All Templates': '/home/letters',
+  // Keka Core Modules
+  'Attendance Regularization': '/home/attendance-regularization',
+  'Regularization': '/home/attendance-regularization',
+  'Performance': '/home/performance',
+  'Performance & OKRs': '/home/performance',
+  'Goals & OKRs': '/home/performance',
+  'Helpdesk': '/home/helpdesk',
+  'HR Helpdesk': '/home/helpdesk',
+  'Service Requests': '/home/helpdesk',
+  'Resignation': '/home/resignation',
+  'Exit Clearance': '/home/resignation',
+  'Offboarding': '/home/resignation',
 };
 
 export function mapRoute(submenuName: string): string {
@@ -105,6 +117,10 @@ export function mapRoute(submenuName: string): string {
   if (ROUTE_MAP[safeName]) return ROUTE_MAP[safeName];
   const foundKey = Object.keys(ROUTE_MAP).find(k => k.toLowerCase() === lowerName);
   if (foundKey) return ROUTE_MAP[foundKey];
+  if (lowerName.includes('regulariz')) return '/home/attendance-regularization';
+  if (lowerName.includes('perform') || lowerName.includes('okr') || lowerName.includes('goal')) return '/home/performance';
+  if (lowerName.includes('helpdesk') || lowerName.includes('ticket')) return '/home/helpdesk';
+  if (lowerName.includes('resign') || lowerName.includes('offboard') || lowerName.includes('exit')) return '/home/resignation';
   if (lowerName.includes('offer')) return '/home/letters?type=offer';
   if (lowerName.includes('experience')) return '/home/letters?type=experience';
   if (lowerName.includes('appoint') || lowerName.includes('loa') || lowerName.includes('certif')) return '/home/letters?type=appointment';
@@ -171,6 +187,7 @@ export function buildMenuFromToken(): { label: string; icon: string; items: { la
           items: [
             { label: 'Org Chart (Hierarchy)', icon: 'git-branch', path: '/home/org-chart' },
             { label: 'Company Feed', icon: 'bell', path: '/home/feed' },
+            { label: 'HR Helpdesk & Tickets', icon: 'life-buoy', path: '/home/helpdesk' },
           ]
         });
       }
@@ -185,6 +202,18 @@ export function buildMenuFromToken(): { label: string; icon: string; items: { la
           ]
         });
       }
+
+      // Add Keka-grade Performance, Regularization & Separation Hubs for Admin
+      filteredAccess.push({
+        label: 'Performance & Operations',
+        icon: 'target',
+        items: [
+          { label: 'Attendance Regularization', icon: 'clock', path: '/home/attendance-regularization' },
+          { label: 'Performance & OKRs', icon: 'award', path: '/home/performance' },
+          { label: 'Exit Clearance & Offboarding', icon: 'log-out', path: '/home/resignation' },
+        ]
+      });
+
       return [homeCategory, ...filteredAccess];
     }
 
@@ -197,6 +226,8 @@ export function buildMenuFromToken(): { label: string; icon: string; items: { la
         items: [
           { label: 'Org Hierarchy Tree', icon: 'git-branch', path: '/home/org-chart' },
           { label: 'Company Feed', icon: 'rss', path: '/home/feed' },
+          { label: 'Performance & OKRs', icon: 'target', path: '/home/performance' },
+          { label: 'HR Helpdesk & Tickets', icon: 'life-buoy', path: '/home/helpdesk' },
         ]
       },
       {
@@ -204,6 +235,7 @@ export function buildMenuFromToken(): { label: string; icon: string; items: { la
         icon: 'clock',
         items: [
           { label: 'Leave Application', icon: 'calendar-plus', path: '/home/leaverequest' },
+          { label: 'Attendance Regularization', icon: 'clock', path: '/home/attendance-regularization' },
           { label: 'Monthly Attendance Log', icon: 'calendar', path: '/home/monthlyreport' },
           { label: 'Company Holidays', icon: 'sun', path: '/home/holidayplanning' },
           { label: 'Assigned Shifts', icon: 'clock', path: '/home/manage-shifts' },
@@ -223,6 +255,7 @@ export function buildMenuFromToken(): { label: string; icon: string; items: { la
         items: [
           { label: 'Document Vault', icon: 'shield', path: '/home/documents' },
           { label: 'Asset Allocation', icon: 'box', path: '/home/asset-management' },
+          { label: 'Resignation & Clearance', icon: 'log-out', path: '/home/resignation' },
         ]
       }
     ];
