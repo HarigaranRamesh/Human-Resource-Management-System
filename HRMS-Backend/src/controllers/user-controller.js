@@ -58,17 +58,33 @@ UserController.get("/", async (req, res) => {
     const auth = await requireAuth(req, res);
     if (!auth) return;
 
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
-    const search = req.query.user_name || req.query.search || '';
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 20;
+    const search = req.query.search || req.query.user_name || req.query.q || '';
+    const department = req.query.department;
+    const status = req.query.status;
+    const role = req.query.role;
+    const sortBy = req.query.sortBy || 'created_at';
+    const sortOrder = req.query.sortOrder || 'DESC';
     const isCandidateRole = req.query.isCandidateRole !== undefined ? req.query.isCandidateRole === 'true' : undefined;
     const isSystem = req.query.isSystem !== undefined ? req.query.isSystem === 'true' : undefined;
 
-    const data = await userRepo.listUsers({ page, limit, search, isCandidateRole, isSystem });
+    const data = await userRepo.listUsers({
+      page,
+      limit,
+      search,
+      department,
+      status,
+      role,
+      sortBy,
+      sortOrder,
+      isCandidateRole,
+      isSystem,
+    });
     res.json(data);
   } catch (e) {
     console.error("GET /users error:", e);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ success: false, error: "SERVER_ERROR", message: "Failed to fetch users" });
   }
 })
   .get("/:id", async (req, res) => {

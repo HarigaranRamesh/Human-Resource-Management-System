@@ -13,21 +13,66 @@ async function listByUser(userId) {
   return rows;
 }
 
-async function listPending(department = null) {
-  let q = `
+async function listPending(options = null) {
+  // Support both listPending('Engineering') and listPending({ department, page, limit, search, sortBy, sortOrder })
+  let department = typeof options === 'string' ? options : options?.department;
+  const isPaginated = typeof options === 'object' && options !== null && (options.page !== undefined || options.limit !== undefined || options.search !== undefined);
+  const page = isPaginated ? (parseInt(options.page, 10) || 1) : 1;
+  const limit = isPaginated ? (parseInt(options.limit, 10) || 20) : 500;
+  const offset = (Math.max(1, page) - 1) * limit;
+  const search = typeof options === 'object' ? options?.search : null;
+  const sortBy = (typeof options === 'object' && options?.sortBy) || 'created_at';
+  const sortOrder = (typeof options === 'object' && options?.sortOrder) || 'DESC';
+
+  let where = "WHERE la.status = 'Pending'";
+  const params = [];
+
+  if (department && department !== 'All') {
+    params.push(department.trim());
+    where += ` AND u.department = $${params.length}`;
+  }
+
+  if (search && String(search).trim()) {
+    params.push(`%${String(search).trim()}%`);
+    where += ` AND (u.user_name ILIKE $${params.length} OR u.emp_id ILIKE $${params.length} OR la.leave_type ILIKE $${params.length} OR la.reason ILIKE $${params.length})`;
+  }
+
+  const ALLOWED_SORTS = {
+    created_at: 'la.created_at',
+    from_date: 'la.from_date',
+    total_days: 'la.total_days',
+    user_name: 'u.user_name',
+  };
+  const sortCol = ALLOWED_SORTS[sortBy] || 'la.created_at';
+  const sortDir = String(sortOrder).toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+  params.push(limit, offset);
+  const { rows } = await query(`
     SELECT la.*, u.user_name, u.emp_id, u.department, u.position, u.profile_image
     FROM leave_applications la
     JOIN users u ON u.id = la.user_id
-    WHERE la.status = 'Pending'
-  `;
-  const params = [];
-  if (department && department !== 'All') {
-    params.push(department);
-    q += ` AND u.department = $1`;
+    ${where}
+    ORDER BY ${sortCol} ${sortDir}, la.id ${sortDir}
+    LIMIT $${params.length - 1} OFFSET $${params.length}
+  `, params);
+
+  if (!isPaginated) {
+    return rows;
   }
-  q += ` ORDER BY la.created_at DESC`;
-  const { rows } = await query(q, params);
-  return rows;
+
+  const { rows: countRows } = await query(`
+    SELECT COUNT(*) FROM leave_applications la JOIN users u ON u.id = la.user_id ${where}
+  `, params.slice(0, -2));
+
+  const total = parseInt(countRows[0]?.count || 0, 10);
+
+  return {
+    requests: rows,
+    total,
+    page: Math.max(1, page),
+    limit,
+    totalPages: Math.ceil(total / limit) || 1,
+  };
 }
 
 async function createApplication({ userId, leaveType, fromDate, toDate, totalDays, isHalfDay = false, halfDayPeriod = null, reason, documentUrl = null }) {

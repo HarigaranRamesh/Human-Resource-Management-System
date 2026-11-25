@@ -3,8 +3,18 @@ import api from '../lib/api';
 const BASE = '/api/user';
 
 export const userApi = {
-  getUsers: (page: number, limit: number, filterField?: string, searchText?: string, isCandidateRole?: boolean, isSystem?: boolean) => {
-    const params: any = { page, limit };
+  getUsers: (
+    pageOrParams: number | { page?: number; limit?: number; search?: string; department?: string; status?: string | boolean; role?: string; sortBy?: string; sortOrder?: 'ASC' | 'DESC' | 'asc' | 'desc' },
+    limit?: number,
+    filterField?: string,
+    searchText?: string,
+    isCandidateRole?: boolean,
+    isSystem?: boolean
+  ) => {
+    if (typeof pageOrParams === 'object') {
+      return api.get(BASE, { params: pageOrParams });
+    }
+    const params: any = { page: pageOrParams, limit };
     if (filterField && searchText) params[filterField] = searchText;
     if (isCandidateRole !== undefined) params.isCandidateRole = String(isCandidateRole);
     if (isSystem !== undefined) params.isSystem = String(isSystem);
@@ -94,8 +104,12 @@ export const leaveApplicationApi = {
     halfDayPeriod?: string;
     reason: string;
   }) => api.post('/api/leaves/apply', data),
-  getPending: (department?: string) =>
-    api.get('/api/leaves/pending', { params: department ? { department } : {} }),
+  getPending: (params?: string | { department?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: string }) => {
+    if (typeof params === 'string') {
+      return api.get('/api/leaves/pending', { params: params && params !== 'All' ? { department: params } : {} });
+    }
+    return api.get('/api/leaves/pending', { params });
+  },
   approve: (id: string, comments?: string) =>
     api.post(`/api/leaves/${id}/approve`, { comments }),
   reject: (id: string, comments?: string) =>

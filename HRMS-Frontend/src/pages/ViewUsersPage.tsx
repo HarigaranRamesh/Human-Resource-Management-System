@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, Users } from 'lucide-react';
+import { Loader2, Users, ChevronUp, ChevronDown, ArrowUpDown, Filter } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { userApi } from '../services/api.service';
+import { useDebounce } from '../lib/useDebounce';
 import {
   PageHeader,
   Card,
@@ -23,23 +24,44 @@ export default function ViewUsersPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
+
+  // Filters & Sorting state
+  const [department, setDepartment] = useState('');
+  const [status, setStatus] = useState('');
+  const [role, setRole] = useState('');
+  const [sortBy, setSortBy] = useState('created_at');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
   const [userToDelete, setUserToDelete] = useState<{ id: string; name: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
   const limit = 10;
 
   const currentUserId = localStorage.getItem('userId');
 
+  // Trigger fetch whenever page, debouncedSearch, department, status, role, or sorting changes
   useEffect(() => {
-    loadUsers(page, search);
-  }, [page]);
+    loadUsers();
+  }, [page, debouncedSearch, department, status, role, sortBy, sortOrder]);
 
-  const loadUsers = async (pageToLoad = page, searchToUse = search) => {
+  const loadUsers = async () => {
     setLoading(true);
     try {
-      const res = await userApi.getUsers(pageToLoad, limit, searchToUse ? 'user_name' : undefined, searchToUse || undefined);
-      setUsers(res.data.users || res.data || []);
-      if (res.data.totalPages !== undefined) setTotalPages(res.data.totalPages || 1);
-      if (res.data.total !== undefined) setTotalUsers(res.data.total);
+      const res = await userApi.getUsers({
+        page,
+        limit,
+        search: debouncedSearch || undefined,
+        department: department || undefined,
+        status: status || undefined,
+        role: role || undefined,
+        sortBy,
+        sortOrder,
+      });
+
+      const data = res.data;
+      setUsers(data.users || data || []);
+      if (data.totalPages !== undefined) setTotalPages(data.totalPages || 1);
+      if (data.total !== undefined) setTotalUsers(data.total);
     } catch {
       toast.error('Failed to load users');
     } finally {
@@ -47,13 +69,35 @@ export default function ViewUsersPage() {
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (page === 1) {
-      loadUsers(1, search);
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
     } else {
-      setPage(1);
+      setSortBy(column);
+      setSortOrder('asc');
     }
+    setPage(1);
+  };
+
+  const renderSortIndicator = (column: string) => {
+    if (sortBy !== column) {
+      return <ArrowUpDown size={13} style={{ opacity: 0.35, marginLeft: '4px', verticalAlign: 'middle' }} />;
+    }
+    return sortOrder === 'asc' ? (
+      <ChevronUp size={14} style={{ color: 'var(--primary)', marginLeft: '4px', verticalAlign: 'middle' }} />
+    ) : (
+      <ChevronDown size={14} style={{ color: 'var(--primary)', marginLeft: '4px', verticalAlign: 'middle' }} />
+    );
+  };
+
+  const handleResetFilters = () => {
+    setSearch('');
+    setDepartment('');
+    setStatus('');
+    setRole('');
+    setSortBy('created_at');
+    setSortOrder('desc');
+    setPage(1);
   };
 
   const handleDeleteClick = (user: any) => {
@@ -88,6 +132,8 @@ export default function ViewUsersPage() {
     }
   };
 
+  const hasActiveFilters = Boolean(search || department || status || role);
+
   return (
     <div className="page-container">
       <PageHeader
@@ -104,37 +150,94 @@ export default function ViewUsersPage() {
         }
       />
 
-      {/* Search Toolbar */}
-      <Card className="search-card" style={{ marginBottom: '1.25rem' }}>
-        <form className="search-form" onSubmit={handleSearch}>
-          <div className="search-input-wrap">
-            <SearchIcon size={16} className="search-icon" />
+      {/* Filter and Debounced Search Toolbar */}
+      <Card style={{ marginBottom: '1.25rem', padding: '1rem 1.25rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', justifyContent: 'space-between' }}>
+          {/* Search Input with Debounce */}
+          <div style={{ position: 'relative', flex: '1 1 280px', minWidth: '240px' }}>
+            <SearchIcon
+              size={16}
+              style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', pointerEvents: 'none' }}
+            />
             <input
               type="text"
-              className="search-input"
-              placeholder="Search by name, emp ID, email, department, or mobile..."
+              className="form-input"
+              style={{ width: '100%', paddingLeft: '36px' }}
+              placeholder="Search by name, emp ID, email, mobile..."
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={e => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
             />
           </div>
-          <Button type="submit" variant="primary">Search</Button>
-          {search && (
+
+          {/* Department Filter */}
+          <div style={{ minWidth: '150px' }}>
+            <select
+              className="form-input"
+              value={department}
+              onChange={e => {
+                setDepartment(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">All Departments</option>
+              <option value="Engineering">Engineering</option>
+              <option value="Human Resources">Human Resources</option>
+              <option value="Quality Assurance">Quality Assurance</option>
+              <option value="Sales & Business">Sales & Business</option>
+              <option value="Product & Design">Product & Design</option>
+              <option value="Finance">Finance</option>
+            </select>
+          </div>
+
+          {/* Role Filter */}
+          <div style={{ minWidth: '130px' }}>
+            <select
+              className="form-input"
+              value={role}
+              onChange={e => {
+                setRole(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">All Roles</option>
+              <option value="Super Admin">Super Admin</option>
+              <option value="Admin">Admin</option>
+              <option value="HR">HR</option>
+              <option value="Employee">Employee</option>
+            </select>
+          </div>
+
+          {/* Status Filter */}
+          <div style={{ minWidth: '130px' }}>
+            <select
+              className="form-input"
+              value={status}
+              onChange={e => {
+                setStatus(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">All Statuses</option>
+              <option value="true">Active</option>
+              <option value="false">Inactive</option>
+            </select>
+          </div>
+
+          {/* Reset Filters */}
+          {hasActiveFilters && (
             <Button
               type="button"
               variant="secondary"
-              onClick={() => {
-                setSearch('');
-                if (page === 1) {
-                  loadUsers(1, '');
-                } else {
-                  setPage(1);
-                }
-              }}
+              size="sm"
+              onClick={handleResetFilters}
             >
-              Clear
+              Reset
             </Button>
           )}
-        </form>
+        </div>
       </Card>
 
       {/* Users Table Card */}
@@ -152,13 +255,33 @@ export default function ViewUsersPage() {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>#</th>
-                    <th>Employee</th>
-                    <th>Emp ID</th>
+                    <th style={{ width: '50px' }}>#</th>
+                    <th
+                      style={{ cursor: 'pointer', userSelect: 'none' }}
+                      onClick={() => handleSort('user_name')}
+                    >
+                      Employee {renderSortIndicator('user_name')}
+                    </th>
+                    <th
+                      style={{ cursor: 'pointer', userSelect: 'none' }}
+                      onClick={() => handleSort('emp_id')}
+                    >
+                      Emp ID {renderSortIndicator('emp_id')}
+                    </th>
                     <th>Mobile</th>
-                    <th>Email</th>
+                    <th
+                      style={{ cursor: 'pointer', userSelect: 'none' }}
+                      onClick={() => handleSort('email')}
+                    >
+                      Email {renderSortIndicator('email')}
+                    </th>
                     <th>Role</th>
-                    <th>Department</th>
+                    <th
+                      style={{ cursor: 'pointer', userSelect: 'none' }}
+                      onClick={() => handleSort('department')}
+                    >
+                      Department {renderSortIndicator('department')}
+                    </th>
                     <th>Status</th>
                     <th style={{ textAlign: 'center' }}>Actions</th>
                   </tr>
@@ -168,16 +291,22 @@ export default function ViewUsersPage() {
                     <tr>
                       <td colSpan={9} className="table-empty">
                         <Users size={40} style={{ opacity: 0.3, marginBottom: '0.5rem' }} />
-                        <p>No users found</p>
-                        <div style={{ marginTop: '0.75rem' }}>
-                          <Button
-                            size="sm"
-                            variant="primary"
-                            icon={<AddIcon size={14} />}
-                            onClick={() => navigate('/home/adduser')}
-                          >
-                            Add New User
-                          </Button>
+                        <p>{hasActiveFilters ? 'No users matching the filters' : 'No users found'}</p>
+                        <div style={{ marginTop: '0.75rem', display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                          {hasActiveFilters ? (
+                            <Button size="sm" variant="secondary" onClick={handleResetFilters}>
+                              Clear Filters
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="primary"
+                              icon={<AddIcon size={14} />}
+                              onClick={() => navigate('/home/adduser')}
+                            >
+                              Add New User
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -236,28 +365,33 @@ export default function ViewUsersPage() {
               </table>
             </div>
 
-            {/* Pagination */}
+            {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="pagination">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  ‹ Prev
-                </Button>
-                <span className="page-info">
-                  Page {page} of {totalPages}
+              <div className="pagination" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderTop: '1px solid var(--border)' }}>
+                <span className="page-info" style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                  Showing {users.length > 0 ? (page - 1) * limit + 1 : 0} to {Math.min(page * limit, totalUsers)} of {totalUsers} employees
                 </span>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                >
-                  Next ›
-                </Button>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                  >
+                    ‹ Prev
+                  </Button>
+                  <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)', padding: '0 8px' }}>
+                    {page} / {totalPages}
+                  </span>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                  >
+                    Next ›
+                  </Button>
+                </div>
               </div>
             )}
           </>

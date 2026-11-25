@@ -74,11 +74,21 @@ LeaveAppController.post('/apply', requireAuth, async (req, res) => {
 // 4. Pending Leave Applications (Admin / Manager Inbox)
 LeaveAppController.get('/pending', requireAuth, async (req, res) => {
   try {
-    const dept = req.query.department || null;
-    const list = await leaveAppRepo.listPending(dept);
+    const department = req.query.department || null;
+    const page = req.query.page !== undefined ? parseInt(req.query.page, 10) : undefined;
+    const limit = req.query.limit !== undefined ? parseInt(req.query.limit, 10) : undefined;
+    const search = req.query.search || req.query.q || undefined;
+    const sortBy = req.query.sortBy;
+    const sortOrder = req.query.sortOrder;
+
+    const list = await leaveAppRepo.listPending(
+      page !== undefined || limit !== undefined || search !== undefined || sortBy !== undefined
+        ? { department, page, limit, search, sortBy, sortOrder }
+        : department
+    );
     res.json(list);
   } catch (e) {
-    res.status(500).json({ message: e.message });
+    res.status(500).json({ success: false, error: 'SERVER_ERROR', message: e.message });
   }
 });
 

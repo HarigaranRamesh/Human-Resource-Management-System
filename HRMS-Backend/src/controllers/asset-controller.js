@@ -31,12 +31,29 @@ function requireAuth(req, res, next) {
 AssetController.get('/', requireAuth, async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 50;
-    const list = await assetRepo.list({ page, limit });
-    res.json(list);
+    const limit = parseInt(req.query.limit, 10) || (req.query.all === 'true' ? 500 : 20);
+    const search = req.query.search || req.query.q || '';
+    const assetType = req.query.assetType || req.query.type;
+    const condition = req.query.condition;
+    const assignedTo = req.query.assignedTo;
+    const sortBy = req.query.sortBy || 'created_at';
+    const sortOrder = req.query.sortOrder || 'DESC';
+
+    const data = await assetRepo.list({
+      page,
+      limit,
+      search,
+      assetType,
+      condition,
+      assignedTo,
+      sortBy,
+      sortOrder,
+    });
+    // Support both direct array and object with .assets
+    res.json(data);
   } catch (err) {
     console.error('GET /assets error:', err);
-    res.status(500).json({ message: 'Failed to fetch assets' });
+    res.status(500).json({ success: false, error: 'SERVER_ERROR', message: 'Failed to fetch assets' });
   }
 });
 

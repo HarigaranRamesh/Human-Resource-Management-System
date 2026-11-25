@@ -15,13 +15,18 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Response interceptor - handle 401
+// Response interceptor - handle 401 & token expiry safely
 api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      localStorage.clear();
-      window.location.href = '/';
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/' && !currentPath.includes('/login') && !currentPath.includes('/onboard')) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('userId');
+        window.location.href = '/';
+      }
     }
     return Promise.reject(err);
   }

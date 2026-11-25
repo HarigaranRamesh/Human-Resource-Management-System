@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { assetApi, userApi } from '../services/api.service';
-import { PageHeader, Card, Button, Badge, FormInput, Select, Modal } from '../components/common';
-import { Laptop, Plus, Trash2, Edit2, Shield, CheckCircle } from 'lucide-react';
+import { PageHeader, Card, Button, Badge, FormInput, Select, Modal, SearchIcon } from '../components/common';
+import { Laptop, Plus, Trash2, ArrowUpDown, ChevronUp, ChevronDown } from 'lucide-react';
+import { useDebounce } from '../lib/useDebounce';
 import toast from 'react-hot-toast';
 
 export default function AssetManagementPage() {
@@ -13,19 +14,52 @@ export default function AssetManagementPage() {
   const [form, setForm] = useState({ name: '', assetType: 'Laptop', serialNo: '', assignedTo: '', condition: 'Excellent', notes: '' });
   const [saving, setSaving] = useState(false);
 
+  // Pagination, Search, Filter & Sort
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalAssets, setTotalAssets] = useState(0);
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
+  const [assetTypeFilter, setAssetTypeFilter] = useState('');
+  const [conditionFilter, setConditionFilter] = useState('');
+  const [sortBy, setSortBy] = useState('created_at');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const limit = 10;
+
   useEffect(() => {
     const role = (localStorage.getItem('userRole') || '').toLowerCase();
     const admin = localStorage.getItem('isSystemAdmin') === 'true' || role.includes('admin') || role.includes('hr');
     setIsAdmin(admin);
-    loadAssets();
     if (admin) loadUsers();
   }, []);
+
+  useEffect(() => {
+    loadAssets();
+  }, [page, debouncedSearch, assetTypeFilter, conditionFilter, sortBy, sortOrder]);
 
   const loadAssets = async () => {
     setLoading(true);
     try {
-      const res = await assetApi.getAssets();
-      setAssets(Array.isArray(res.data) ? res.data : []);
+      const res = await assetApi.getAssets({
+        page,
+        limit,
+        search: debouncedSearch || undefined,
+        assetType: assetTypeFilter || undefined,
+        condition: conditionFilter || undefined,
+        sortBy,
+        sortOrder,
+      });
+
+      const data = res.data;
+      if (Array.isArray(data)) {
+        setAssets(data);
+        setTotalAssets(data.length);
+        setTotalPages(1);
+      } else {
+        setAssets(data.assets || []);
+        if (data.totalPages !== undefined) setTotalPages(data.totalPages || 1);
+        if (data.total !== undefined) setTotalAssets(data.total);
+      }
     } catch {
       toast.error('Failed to load assets');
     } finally {
@@ -40,6 +74,36 @@ export default function AssetManagementPage() {
     } catch {
       // ignore
     }
+  };
+
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortBy(column);
+      setSortOrder('asc');
+    }
+    setPage(1);
+  };
+
+  const renderSortIndicator = (column: string) => {
+    if (sortBy !== column) {
+      return <ArrowUpDown size={13} style={{ opacity: 0.35, marginLeft: '4px', verticalAlign: 'middle' }} />;
+    }
+    return sortOrder === 'asc' ? (
+      <ChevronUp size={14} style={{ color: 'var(--primary)', marginLeft: '4px', verticalAlign: 'middle' }} />
+    ) : (
+      <ChevronDown size={14} style={{ color: 'var(--primary)', marginLeft: '4px', verticalAlign: 'middle' }} />
+    );
+  };
+
+  const handleResetFilters = () => {
+    setSearch('');
+    setAssetTypeFilter('');
+    setConditionFilter('');
+    setSortBy('created_at');
+    setSortOrder('desc');
+    setPage(1);
   };
 
   const handleCreateAsset = async (e: React.FormEvent) => {
@@ -73,11 +137,13 @@ export default function AssetManagementPage() {
     }
   };
 
+  const hasActiveFilters = Boolean(search || assetTypeFilter || conditionFilter);
+
   return (
     <div className="page-container">
       <PageHeader
         title="Asset Allocation & Device Inventory"
-        subtitle="Manage hardware lifecycle, laptops, peripherals, and assigned employee assets"
+        subtitle={totalAssets > 0 ? `Manage hardware lifecycle, laptops, peripherals, and assigned employee assets (${totalAssets} total)` : "Manage hardware lifecycle, laptops, peripherals, and assigned employee assets"}
         actions={
           isAdmin && (
             <Button
@@ -91,6 +157,79 @@ export default function AssetManagementPage() {
         }
       />
 
+      {/* Filter and Debounced Search Toolbar */}
+      <Card style={{ marginBottom: '1.25rem', padding: '1rem 1.25rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', justifyContent: 'space-between' }}>
+          {/* Search Input with Debounce */}
+          <div style={{ position: 'relative', flex: '1 1 280px', minWidth: '240px' }}>
+            <SearchIcon
+              size={16}
+              style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', pointerEvents: 'none' }}
+            />
+            <input
+              type="text"
+              className="form-input"
+              style={{ width: '100%', paddingLeft: '36px' }}
+              placeholder="Search by asset name, serial number..."
+              value={search}
+              onChange={e => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+            />
+          </div>
+
+          {/* Asset Type Filter */}
+          <div style={{ minWidth: '150px' }}>
+            <select
+              className="form-input"
+              value={assetTypeFilter}
+              onChange={e => {
+                setAssetTypeFilter(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">All Asset Types</option>
+              <option value="Laptop">Laptop</option>
+              <option value="Monitor">Monitor</option>
+              <option value="Mobile Device">Mobile Device</option>
+              <option value="Peripherals">Peripherals</option>
+              <option value="Security Key">Security Key</option>
+            </select>
+          </div>
+
+          {/* Condition Filter */}
+          <div style={{ minWidth: '140px' }}>
+            <select
+              className="form-input"
+              value={conditionFilter}
+              onChange={e => {
+                setConditionFilter(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">All Conditions</option>
+              <option value="Brand New">Brand New</option>
+              <option value="Excellent">Excellent</option>
+              <option value="Good">Good</option>
+              <option value="Fair">Fair</option>
+            </select>
+          </div>
+
+          {/* Reset Filters */}
+          {hasActiveFilters && (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleResetFilters}
+            >
+              Reset
+            </Button>
+          )}
+        </div>
+      </Card>
+
       <Card>
         {loading ? (
           <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
@@ -99,79 +238,138 @@ export default function AssetManagementPage() {
         ) : assets.length === 0 ? (
           <div style={{ padding: '3.5rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
             <Laptop size={48} style={{ opacity: 0.3, margin: '0 auto 1rem', display: 'block' }} />
-            <p>No assets currently registered.</p>
+            <p>{hasActiveFilters ? 'No assets matching filter criteria.' : 'No assets currently registered.'}</p>
+            {hasActiveFilters && (
+              <div style={{ marginTop: '0.75rem' }}>
+                <Button size="sm" variant="secondary" onClick={handleResetFilters}>
+                  Clear Filters
+                </Button>
+              </div>
+            )}
           </div>
         ) : (
-          <div className="table-responsive">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Asset Name</th>
-                  <th>Type</th>
-                  <th>Serial Number</th>
-                  <th>Assigned To</th>
-                  <th>Condition</th>
-                  {isAdmin && <th style={{ textAlign: 'right' }}>Actions</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {assets.map((a) => (
-                  <tr key={a.id}>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div
-                          style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '8px',
-                            background: 'rgba(86, 124, 141, 0.15)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'var(--primary)',
-                          }}
-                        >
-                          <Laptop size={16} />
-                        </div>
-                        <strong style={{ color: 'var(--text-primary)' }}>{a.name}</strong>
-                      </div>
-                    </td>
-                    <td>{a.asset_type || 'Hardware'}</td>
-                    <td>
-                      <code>{a.serial_no || '—'}</code>
-                    </td>
-                    <td>
-                      {a.user_name ? (
-                        <span style={{ fontWeight: 600, color: 'var(--primary)' }}>{a.user_name}</span>
-                      ) : (
-                        <span style={{ color: 'var(--text-secondary)' }}>Available in Pool</span>
-                      )}
-                    </td>
-                    <td>
-                      <Badge variant="success">{a.condition || 'Good'}</Badge>
-                    </td>
-                    {isAdmin && (
-                      <td style={{ textAlign: 'right' }}>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(a.id, a.name)}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            color: '#ef4444',
-                            cursor: 'pointer',
-                            padding: '4px',
-                          }}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </td>
-                    )}
+          <>
+            <div className="table-responsive">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th
+                      style={{ cursor: 'pointer', userSelect: 'none' }}
+                      onClick={() => handleSort('name')}
+                    >
+                      Asset Name {renderSortIndicator('name')}
+                    </th>
+                    <th
+                      style={{ cursor: 'pointer', userSelect: 'none' }}
+                      onClick={() => handleSort('asset_type')}
+                    >
+                      Type {renderSortIndicator('asset_type')}
+                    </th>
+                    <th
+                      style={{ cursor: 'pointer', userSelect: 'none' }}
+                      onClick={() => handleSort('serial_no')}
+                    >
+                      Serial Number {renderSortIndicator('serial_no')}
+                    </th>
+                    <th>Assigned To</th>
+                    <th
+                      style={{ cursor: 'pointer', userSelect: 'none' }}
+                      onClick={() => handleSort('condition')}
+                    >
+                      Condition {renderSortIndicator('condition')}
+                    </th>
+                    {isAdmin && <th style={{ textAlign: 'right' }}>Actions</th>}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {assets.map((a) => (
+                    <tr key={a.id}>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div
+                            style={{
+                              width: '32px',
+                              height: '32px',
+                              borderRadius: '8px',
+                              background: 'rgba(86, 124, 141, 0.15)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: 'var(--primary)',
+                            }}
+                          >
+                            <Laptop size={16} />
+                          </div>
+                          <strong style={{ color: 'var(--text-primary)' }}>{a.name}</strong>
+                        </div>
+                      </td>
+                      <td>{a.asset_type || 'Hardware'}</td>
+                      <td>
+                        <code>{a.serial_no || '—'}</code>
+                      </td>
+                      <td>
+                        {a.user_name ? (
+                          <span style={{ fontWeight: 600, color: 'var(--primary)' }}>{a.user_name}</span>
+                        ) : (
+                          <span style={{ color: 'var(--text-secondary)' }}>Available in Pool</span>
+                        )}
+                      </td>
+                      <td>
+                        <Badge variant="success">{a.condition || 'Good'}</Badge>
+                      </td>
+                      {isAdmin && (
+                        <td style={{ textAlign: 'right' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(a.id, a.name)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#ef4444',
+                              cursor: 'pointer',
+                              padding: '4px',
+                            }}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="pagination" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderTop: '1px solid var(--border)' }}>
+                <span className="page-info" style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                  Showing {assets.length > 0 ? (page - 1) * limit + 1 : 0} to {Math.min(page * limit, totalAssets)} of {totalAssets} assets
+                </span>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                  >
+                    ‹ Prev
+                  </Button>
+                  <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)', padding: '0 8px' }}>
+                    {page} / {totalPages}
+                  </span>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                  >
+                    Next ›
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </Card>
 

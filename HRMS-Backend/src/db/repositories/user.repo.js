@@ -66,14 +66,32 @@ async function findUniversal(identifier, includePassword = false) {
   return mapRow(rows[0], includePassword);
 }
 
-async function listUsers({ page = 1, limit = 20, search, isCandidateRole, isSystem } = {}) {
-  const offset = (page - 1) * limit;
+async function listUsers({ page = 1, limit = 20, search, department, status, role, sortBy = 'created_at', sortOrder = 'DESC', isCandidateRole, isSystem } = {}) {
+  const offset = (Math.max(1, page) - 1) * limit;
   let where = 'WHERE 1=1';
   const params = [];
 
-  if (search) {
-    params.push(`%${search}%`);
+  if (search && String(search).trim()) {
+    params.push(`%${String(search).trim()}%`);
     where += ` AND (u.user_name ILIKE $${params.length} OR u.mobile_no ILIKE $${params.length} OR u.email ILIKE $${params.length} OR u.emp_id ILIKE $${params.length} OR u.department ILIKE $${params.length} OR r.role ILIKE $${params.length})`;
+  }
+
+  if (department && department !== 'All') {
+    params.push(String(department).trim());
+    where += ` AND u.department = $${params.length}`;
+  }
+
+  if (status !== undefined && status !== null && status !== '') {
+    if (status === 'true' || status === true || status === 'active' || status === 1 || status === '1') {
+      where += ` AND (u.status IS TRUE OR u.status = 1)`;
+    } else if (status === 'false' || status === false || status === 'inactive' || status === 0 || status === '0') {
+      where += ` AND (u.status IS FALSE OR u.status = 0 OR u.status IS NULL)`;
+    }
+  }
+
+  if (role && role !== 'All') {
+    params.push(String(role).trim());
+    where += ` AND r.role ILIKE $${params.length}`;
   }
 
   if (typeof isCandidateRole === 'boolean') {
@@ -86,6 +104,19 @@ async function listUsers({ page = 1, limit = 20, search, isCandidateRole, isSyst
     where += ` AND r.is_system=$${params.length}`;
   }
 
+  // Safe whitelisted column sorting
+  const ALLOWED_SORTS = {
+    user_name: 'u.user_name',
+    name: 'u.user_name',
+    emp_id: 'u.emp_id',
+    department: 'u.department',
+    created_at: 'u.created_at',
+    status: 'u.status',
+    role: 'r.role',
+  };
+  const sortCol = ALLOWED_SORTS[sortBy] || 'u.created_at';
+  const sortDir = String(sortOrder).toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
   params.push(limit, offset);
   const { rows } = await query(`
     SELECT u.id, u.user_name, u.mobile_no, u.email, u.emp_id,
@@ -94,7 +125,7 @@ async function listUsers({ page = 1, limit = 20, search, isCandidateRole, isSyst
     FROM   users u
     LEFT JOIN roles r ON r.id = u.role_id
     ${where}
-    ORDER BY u.created_at DESC, u.id DESC
+    ORDER BY ${sortCol} ${sortDir}, u.id ${sortDir}
     LIMIT $${params.length - 1} OFFSET $${params.length}
   `, params);
 
@@ -102,12 +133,14 @@ async function listUsers({ page = 1, limit = 20, search, isCandidateRole, isSyst
     SELECT COUNT(*) FROM users u LEFT JOIN roles r ON r.id=u.role_id ${where}
   `, params.slice(0, -2));
 
+  const total = parseInt(countRows[0]?.count || 0, 10);
+
   return {
     users: rows,
-    total: parseInt(countRows[0].count),
-    page,
+    total,
+    page: Math.max(1, page),
     limit,
-    totalPages: Math.ceil(parseInt(countRows[0].count) / limit),
+    totalPages: Math.ceil(total / limit) || 1,
   };
 }
 
