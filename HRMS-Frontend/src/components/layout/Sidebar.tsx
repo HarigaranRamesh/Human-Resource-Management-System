@@ -432,32 +432,15 @@ function Sidebar() {
         </div>
       </aside>
 
-      {/* Desktop Hover / Click Submenu Flyout Panel */}
+      {/* Desktop Hover / Click Submenu Flyout Panel (Keka-style thin layer) */}
       {activeFlyoutItem && activeFlyoutItem.items.length > 0 && (
         <div
           ref={flyoutRef}
           className="sidebar-hover-flyout"
-          style={{ top: `${flyoutTop}px`, left: '74px' }}
+          style={{ top: `${flyoutTop}px`, left: '72px' }}
           onMouseEnter={handleFlyoutMouseEnter}
           onMouseLeave={handleFlyoutMouseLeave}
         >
-          {/* Header */}
-          <div className="flyout-header">
-            <div className="flyout-header-title-row">
-              <span className="flyout-category-icon">
-                {getCategoryIcon(activeFlyoutItem.label)}
-              </span>
-              <span className="flyout-category-title">
-                {activeFlyoutItem.label}
-              </span>
-            </div>
-            <span className="flyout-badge">
-              {activeFlyoutItem.items.length} {activeFlyoutItem.items.length === 1 ? 'item' : 'items'}
-            </span>
-          </div>
-
-          <div className="flyout-divider" />
-
           {/* Sub-categories List */}
           <ul className="flyout-list">
             {activeFlyoutItem.items.map((sub) => {
@@ -473,9 +456,8 @@ function Sidebar() {
                     onClick={handleSubItemClick}
                     end={sub.path === '/'}
                   >
-                    <ChevronRight size={14} className="flyout-link-chevron" />
                     <span className="flyout-link-text">{sub.label}</span>
-                    {isSubActive && <span className="flyout-active-dot" />}
+                    <ChevronRight size={13} className="flyout-link-chevron" />
                   </NavLink>
                 </li>
               );

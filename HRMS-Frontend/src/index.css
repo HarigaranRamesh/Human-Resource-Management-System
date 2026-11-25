@@ -1166,25 +1166,25 @@ html, body {
   transform: scale(1.05);
 }
 
-/* ── FROSTED GLASS HOVER FLYOUT PANEL ── */
+/* ── PRO SLIM HOVER FLYOUT PANEL (KEKA STYLE THIN LAYER) ── */
 .sidebar-hover-flyout {
   position: fixed;
-  left: 74px;
-  min-width: 240px;
-  max-width: 290px;
+  left: 72px;
+  min-width: 175px;
+  max-width: 210px;
   z-index: 1100;
-  border-radius: 16px;
-  padding: 0.85rem;
+  border-radius: 4px;
+  padding: 4px 0;
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  animation: flyoutSlideIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  animation: flyoutSlideIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes flyoutSlideIn {
   from {
     opacity: 0;
-    transform: translateX(-8px);
+    transform: translateX(-4px);
   }
   to {
     opacity: 1;
@@ -1196,7 +1196,8 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
+  padding: 6px 16px;
+  margin-bottom: 2px;
 }
 
 .flyout-header-title-row {
@@ -1212,7 +1213,7 @@ html, body {
 }
 
 .flyout-category-title {
-  font-size: 0.825rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--text-primary);
   text-transform: uppercase;
@@ -1220,10 +1221,10 @@ html, body {
 }
 
 .flyout-badge {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 600;
-  padding: 2px 7px;
-  border-radius: 20px;
+  padding: 1px 6px;
+  border-radius: 12px;
   background: rgba(86, 124, 141, 0.15);
   color: var(--primary);
 }
@@ -1232,7 +1233,7 @@ html, body {
   height: 1px;
   width: 100%;
   background: var(--border);
-  margin-bottom: 0.5rem;
+  margin-bottom: 2px;
 }
 
 .flyout-list {
@@ -1241,7 +1242,7 @@ html, body {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 1px;
 }
 
 .flyout-list-item {
@@ -1251,32 +1252,32 @@ html, body {
 .flyout-link {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.55rem 0.75rem;
-  border-radius: 10px;
-  font-size: 0.825rem;
+  justify-content: space-between;
+  padding: 8px 16px;
+  border-radius: 0;
+  font-size: 0.84rem;
   font-weight: 500;
   color: var(--text-secondary);
   text-decoration: none;
-  transition: all 0.18s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .flyout-link:hover {
   background: rgba(86, 124, 141, 0.12);
   color: var(--primary);
-  transform: translateX(3px);
+  transform: none;
 }
 
 .flyout-link-active {
-  background: rgba(200, 217, 230, 0.65);
+  background: rgba(200, 217, 230, 0.45);
   color: #2F4156;
-  font-weight: 700;
-  border-radius: 10px;
+  font-weight: 600;
 }
 
 .flyout-link-chevron {
-  opacity: 0.6;
+  opacity: 0.5;
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 .flyout-link-text {
@@ -1284,11 +1285,11 @@ html, body {
 }
 
 .flyout-active-dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: #567C8D;
-  margin-left: auto;
+  margin-left: 6px;
 }
 
 /* Desktop Layout: slim sidebar on left, topbar and main container offset by 72px */
