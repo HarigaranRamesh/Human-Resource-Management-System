@@ -43,7 +43,7 @@
   --shadow-lg: 0 4px 12px 0 rgba(30, 41, 59, 0.06);
   
   --sidebar-width: 72px;
-  --topbar-height: 64px;
+  --topbar-height: 96px;
   --radius: 10px;
   --radius-sm: 6px;
   --radius-lg: 12px;
@@ -500,7 +500,7 @@ html, body {
 }
 
 /* =========================================
-   TOPBAR
+   KEKA-STYLE TWO-TIER TOPBAR
    ========================================= */
 .layout-topbar {
   position: fixed;
@@ -510,70 +510,250 @@ html, body {
   height: var(--topbar-height);
   z-index: 1000;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 1.75rem;
+  flex-direction: column;
   background: #FFFFFF;
   border-bottom: 1px solid #E2E8F0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-  transition: left 0.3s ease, background-color 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: left 0.3s ease;
+  padding: 0 !important;
 }
 
-/* Keka-Style Topbar Horizontal Subcategories Strip */
-.layout-topbar-subcategories {
+/* Primary Top Tier (Brand, Search, Actions) */
+.layout-topbar-primary {
+  height: 54px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex: 1 1 auto;
-  overflow-x: auto;
-  margin: 0 1.25rem;
-  padding: 4px 0;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  min-width: 0;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  background: #2F4156;
+  color: #FFFFFF;
+  gap: 1.25rem;
+  width: 100%;
 }
 
-.layout-topbar-subcategories::-webkit-scrollbar {
+.layout-topbar-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.topbar-company-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+.layout-topbar-primary .layout-topbar-action {
+  color: #FFFFFF !important;
+  background: transparent;
+}
+
+.layout-topbar-primary .layout-topbar-action:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Keka Search Input */
+.topbar-search-wrapper {
+  position: relative;
+  flex: 0 1 480px;
+  min-width: 260px;
+  display: flex;
+  align-items: center;
+}
+
+.topbar-search-icon {
+  position: absolute;
+  left: 14px;
+  color: rgba(255, 255, 255, 0.65);
+  pointer-events: none;
+}
+
+.topbar-search-input {
+  width: 100%;
+  padding: 8px 64px 8px 38px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  font-size: 0.82rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.topbar-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.topbar-search-input:focus {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+.topbar-search-kbd {
+  position: absolute;
+  right: 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.16);
+  padding: 2px 7px;
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+/* Search Dropdown */
+.topbar-search-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  padding: 8px 0;
+  z-index: 1100;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.topbar-search-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  color: #1E293B;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.topbar-search-item:hover {
+  background: #F1F5F9;
+  color: #2F4156;
+}
+
+/* Secondary Sub-Bar (Sideways Subcategories) */
+.layout-topbar-subbar {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E2E8F0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  width: 100%;
+}
+
+.layout-topbar-subbar::-webkit-scrollbar {
   display: none;
 }
 
-.topbar-subnav-link {
+.topbar-subbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 2.25rem;
+  height: 100%;
+}
+
+.topbar-subbar-tab {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 0.84rem;
-  font-weight: 500;
+  height: 100%;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   color: #64748B;
-  background: transparent;
-  border-bottom: 2px solid transparent;
   text-decoration: none;
   white-space: nowrap;
-  flex-shrink: 0;
-  transition: all 0.15s ease;
+  transition: color 0.15s ease;
 }
 
-.topbar-subnav-link:hover {
+.topbar-subbar-tab:hover {
   color: #1E293B;
-  background: #F8FAFC;
 }
 
-.topbar-subnav-link.active {
+.topbar-subbar-tab.active {
   color: #2F4156;
-  font-weight: 700;
-  background: #F1F5F9;
-  border-bottom: 2px solid #2F4156;
 }
 
-@media (max-width: 768px) {
-  .layout-topbar-subcategories {
-    margin: 0 0.5rem;
-    gap: 4px;
-  }
-  .topbar-subnav-link {
-    padding: 5px 10px;
-    font-size: 0.78rem;
+/* Keka Active Triangle Indicator */
+.topbar-tab-triangle {
+  position: absolute;
+  bottom: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid #2F4156;
+}
+
+.topbar-tab-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #EF4444;
+  display: inline-block;
+  margin-left: 2px;
+}
+
+/* Dark mode overrides for Topbar and Subbar */
+.app-dark .layout-topbar {
+  background: #17222E !important;
+  border-bottom-color: rgba(200, 217, 230, 0.18) !important;
+}
+
+.app-dark .layout-topbar-subbar {
+  background: #17222E !important;
+  border-bottom-color: rgba(200, 217, 230, 0.18) !important;
+}
+
+.app-dark .topbar-subbar-tab {
+  color: #94A3B8 !important;
+}
+
+.app-dark .topbar-subbar-tab:hover {
+  color: #FFFFFF !important;
+}
+
+.app-dark .topbar-subbar-tab.active {
+  color: #FFFFFF !important;
+}
+
+.app-dark .topbar-tab-triangle {
+  border-bottom-color: #567C8D !important;
+}
+
+.app-dark .topbar-search-dropdown {
+  background: #1F2D3D !important;
+  border-color: rgba(200, 217, 230, 0.18) !important;
+}
+
+.app-dark .topbar-search-item {
+  color: #F1F5F9 !important;
+}
+
+.app-dark .topbar-search-item:hover {
+  background: rgba(86, 124, 141, 0.2) !important;
+  color: #FFFFFF !important;
+}
+
+@media (max-width: 991px) {
+  .topbar-search-wrapper {
+    display: none;
   }
 }
 
